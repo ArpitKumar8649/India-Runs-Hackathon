@@ -1,0 +1,89 @@
+# Redrob Hackathon — Submission Metadata
+# Fill in your details before submitting
+
+# ============================================================================
+# Team identity
+# ============================================================================
+team_name: "your-team-name"  # ← FILL IN
+
+primary_contact:
+  name: "Your Full Name"              # ← FILL IN
+  email: "your@email.com"             # ← FILL IN
+  phone: "+91-XXXXXXXXXX"             # ← FILL IN
+
+team_members:
+  - name: "Your Full Name"
+    email: "your@email.com"
+    role: "ML Engineer"
+
+# ============================================================================
+# Code and reproducibility
+# ============================================================================
+github_repo: "https://github.com/YOUR_USERNAME/redrob-ranker"  # ← FILL IN
+
+sandbox_link: "https://huggingface.co/spaces/YOUR_USERNAME/redrob-ranker"  # ← FILL IN
+
+reproduce_command: "python rank.py --candidates ./candidates.jsonl.gz --out ./submission.csv"
+
+# ============================================================================
+# Compute environment
+# ============================================================================
+compute:
+  platform: "Local machine"
+  cpu_cores: 8
+  ram_gb: 16
+  python_version: "3.10"
+  os: "Windows 11"                    # ← UPDATE to your OS
+  uses_gpu_for_inference: false       # Must be false
+  has_network_during_ranking: false   # Must be false
+  pre_computation_required: true      # We pre-compute FAISS index in Colab
+  pre_computation_time_minutes: 12    # Approximate GPU time in Colab
+
+# ============================================================================
+# AI tools declaration
+# ============================================================================
+ai_tools_used:
+  - "Claude"
+
+ai_usage_summary: |
+  Used Claude for architecture discussion, code review, and debugging.
+  All candidate data was processed locally — no candidate data was sent
+  to any external LLM. The ranking logic, feature engineering, and
+  scoring weights were designed and validated by the team.
+
+# ============================================================================
+# Approach summary
+# ============================================================================
+methodology_summary: |
+  Two-stage semantic + feature ranking pipeline.
+
+  Stage 1 (FAISS retrieval): All 100k candidates are embedded offline using
+  all-MiniLM-L6-v2 with rich candidate text (title, summary, career
+  descriptions, weighted skills). At ranking time, the JD query is embedded
+  and FAISS retrieves the top-500 most semantically similar candidates
+  (cosine similarity via IndexFlatIP).
+
+  Stage 2 (Feature re-ranking): Each of the 500 candidates is scored across
+  four feature groups: skill match (35%), career fit (35%), availability
+  (20%), and location (10%). Career fit explicitly penalizes consulting-only
+  careers (per JD) and rewards product-company + retrieval/search experience.
+  Availability scoring uses all 23 Redrob behavioral signals, with
+  last_active_date and recruiter_response_rate as primary drivers.
+
+  Honeypot detection checks for impossible tenure, skill inflation (expert
+  proficiency with zero months), and keyword stuffers (AI skills with
+  non-AI title and no AI career work). Detected honeypots receive a 90%
+  score penalty.
+
+  Final score = 0.40 × semantic + 0.60 × feature.
+  Total CPU runtime: approximately 90 seconds for 100k candidates.
+
+# ============================================================================
+# Declarations
+# ============================================================================
+declarations:
+  read_submission_spec: true
+  code_is_original_work: true
+  no_collusion: true
+  honeypot_check_done: true
+  reproduction_tested: true
